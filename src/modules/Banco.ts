@@ -2,7 +2,7 @@ export default class Banco {
   private readonly _cnpj: string = '';
   public readonly name: string
 
-  private clients: Cliente[] | [] = []
+  protected clients: Cliente[] | [] = []
   constructor(name: string, cnpj: string) {
     this.name = name
     this._cnpj = cnpj
@@ -35,17 +35,21 @@ export default class Banco {
     }
   }
 
+  registrarContaPoupanca(cliente: Cliente): ContaPoupanca {
+    if (cliente instanceof Cliente)
+      return new ContaPoupanca(cliente.name, cliente.cpf)
+    else
+      throw new TypeError("Cliente invalido.")
+  }
+
   /**
-   *
+   * Sacar o dinheiro de conta corrente ou poupanca
    * @param tipoConta
    */
-  sacar(tipoConta: 0 | 1) {
-    if (tipoConta === 0) {
-      // Corrente
-    }
-    if (tipoConta === 1) {
-      // Poupanca
-    }
+  sacar(clienteConta: ContaCorrente | ContaPoupanca) {
+    if (!(clienteConta instanceof ContaCorrente) || !(clienteConta instanceof ContaPoupanca)) throw new TypeError("Cliente indefinido.")
+
+    console.log(clienteConta)
   }
 }
 
@@ -64,7 +68,7 @@ class Cliente extends Banco {
 
   greetings(): string {
     this.cnpj
-    return `Ola, eu sou ${this.name}, sou cliente do banco`
+    return `Ola, eu sou ${this.name} (Cliente).`
   }
 
   get cpf() {
@@ -77,12 +81,34 @@ class Cliente extends Banco {
  */
 class ContaCorrente extends Cliente {
 
-  protected _saldo: number = 0
+  private _saldo: number = 0
   public name: string;
+  public tipoConta: string = 'Corrente'
 
   constructor(name: string, cpf: string) {
     super(name, cpf)
     this.name = name
   }
 
+  get saldo(): number {
+    return this._saldo
+  }
+
+}
+
+
+class ContaPoupanca extends Cliente {
+
+  private _saldo: number = 0
+  public name: string;
+  public tipoConta: string = 'Poupanca'
+
+  constructor(name: string, cpf: string) {
+    super(name, cpf)
+    this.name = name
+  }
+
+  get saldo(): number {
+    return this._saldo
+  }
 }
