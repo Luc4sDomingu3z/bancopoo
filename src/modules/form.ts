@@ -13,6 +13,7 @@ export function form(banco: Banco) {
     if (cliente.value && clienteCpf.value) {
       const novoCliente = banco.registrarCliente(cliente.value, clienteCpf.value)
       console.table(novoCliente)
+      console.table(banco.clients)
     }
   })
 }
