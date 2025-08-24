@@ -1,8 +1,8 @@
 export default class Banco {
-  private readonly _cnpj: string = '';
+  private readonly _cnpj: string;
   public readonly name: string
 
-  protected clients: Cliente[] | [] = []
+  private _clients: Cliente[] | [] = []
   constructor(name: string, cnpj: string) {
     this.name = name
     this._cnpj = cnpj
@@ -16,18 +16,22 @@ export default class Banco {
     return `Bem-vindo ao ${this.name}!`
   }
 
-  registrarCliente(name: string, cpf: string): Cliente {
+  get clients() {
+    return this._clients.map((v) => v.name)
+  }
+
+  public registrarCliente(name: string, cpf: string): { cliente: Cliente, corrente: ContaCorrente, poupanca: ContaPoupanca } {
     if (typeof name !== "string" || typeof cpf !== "string")
       throw new TypeError("Dados invalidos.")
     if (name.length === 0 || cpf.length === 0)
       throw new Error("Dados vazios nao permitidos.")
 
     let cliente: Cliente = new Cliente(name, cpf)
-    this.clients.push(cliente as never)
-    return cliente
+    this._clients.push(cliente as never)
+    return { cliente, corrente: this.registrarContaCorrente(cliente), poupanca: this.registrarContaPoupanca(cliente) }
   }
 
-  registrarContaCorrente(cliente: Cliente): ContaCorrente {
+  private registrarContaCorrente(cliente: Cliente): ContaCorrente {
     if (cliente instanceof Cliente) {
       return new ContaCorrente(cliente.name, cliente.cpf)
     } else {
@@ -35,22 +39,13 @@ export default class Banco {
     }
   }
 
-  registrarContaPoupanca(cliente: Cliente): ContaPoupanca {
+  private registrarContaPoupanca(cliente: Cliente): ContaPoupanca {
     if (cliente instanceof Cliente)
       return new ContaPoupanca(cliente.name, cliente.cpf)
     else
       throw new TypeError("Cliente invalido.")
   }
 
-  /**
-   * Sacar o dinheiro de conta corrente ou poupanca
-   * @param tipoConta
-   */
-  sacar(clienteConta: ContaCorrente | ContaPoupanca) {
-    if (!(clienteConta instanceof ContaCorrente) || !(clienteConta instanceof ContaPoupanca)) throw new TypeError("Cliente indefinido.")
-
-    console.log(clienteConta)
-  }
 }
 
 /**
@@ -74,6 +69,10 @@ class Cliente extends Banco {
   get cpf() {
     return this._cpf
   }
+
+  protected sacar(value: number) {
+    console.log("Sacar: " + value)
+  }
 }
 
 /**
@@ -81,7 +80,7 @@ class Cliente extends Banco {
  */
 class ContaCorrente extends Cliente {
 
-  private _saldo: number = 0
+  protected _saldo: number = 0
   public name: string;
   public tipoConta: string = 'Corrente'
 
@@ -94,12 +93,28 @@ class ContaCorrente extends Cliente {
     return this._saldo
   }
 
+  public sacar(value: number): void {
+    if (this.saldo <= 0) throw new Error("Saldo insuficiente.")
+
+    if (value <= 0) throw new Error("Digite um valor valido para sacars")
+
+    const diff: number = this.saldo - value
+    this._saldo = diff
+  }
+
+  public depositar(value: number) {
+    if (value <= 0) throw new Error("Digite um valor valido para sacar.")
+    const soma: number = this.saldo + value
+    this._saldo = soma
+  }
 }
 
-
+/**
+ * Conta poupanca
+ */
 class ContaPoupanca extends Cliente {
 
-  private _saldo: number = 0
+  protected _saldo: number = 0
   public name: string;
   public tipoConta: string = 'Poupanca'
 
@@ -110,5 +125,12 @@ class ContaPoupanca extends Cliente {
 
   get saldo(): number {
     return this._saldo
+  }
+
+  public sacar(value: number): void {
+    if (this.saldo <= 0) throw new Error("Saldo insuficiente.")
+    if (value <= 0) throw new Error("Digite um valor valido para sacar.")
+    const diff: number = this.saldo - value
+    this._saldo = diff
   }
 }

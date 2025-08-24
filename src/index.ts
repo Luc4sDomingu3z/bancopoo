@@ -1,7 +1,6 @@
 import Banco from "./modules/Banco";
+import { form } from "modules/form";
 
-const branhesco: Banco = new Banco("Branhesco", "228239/0111")
-console.log(branhesco.greetings())
+const bancoSalvador: Banco = new Banco("Banco Internacional", "98.391.361/0001-00")
 
-const lucas = branhesco.registrarCliente("Lucas", "8283019232")
-console.log(lucas)
+form(bancoSalvador)
